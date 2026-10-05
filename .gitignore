@@ -1,0 +1,13 @@
+.env
+.env.*
+!.env.example
+.venv/
+.local/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+data/SMSSpamCollection
+data/source-readme.txt
+test-results/
+*.log
+.DS_Store

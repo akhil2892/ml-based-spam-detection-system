@@ -1,0 +1,26 @@
+[
+  {
+    "view": "analyzer",
+    "violations": []
+  },
+  {
+    "view": "batch",
+    "violations": []
+  },
+  {
+    "view": "model",
+    "violations": []
+  },
+  {
+    "view": "about",
+    "violations": []
+  },
+  {
+    "view": "spam",
+    "violations": []
+  },
+  {
+    "view": "ham",
+    "violations": []
+  }
+]

@@ -1,0 +1,730 @@
+{% macro icon(name, cls='') %}<svg class="icon {{ cls }}" aria-hidden="true">
+  <use href="#{{ name }}"></use></svg
+>{% endmacro %}
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="An explainable machine learning spam detector. Check messages locally, inspect learned features, and request an optional AI second opinion."
+    />
+    <meta name="theme-color" content="#214f43" />
+    <title>Signal — ML Spam Detection</title>
+    <link
+      rel="icon"
+      href="{{ url_for('static', filename='favicon.svg') }}"
+      type="image/svg+xml"
+    />
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='styles.css') }}"
+    />
+    <script defer src="{{ url_for('static', filename='app.js') }}"></script>
+  </head>
+  <body data-ai-configured="{{ 'true' if ai_configured else 'false' }}">
+    <svg
+      class="svg-definitions"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden="true"
+    >
+      <symbol id="shield" viewBox="0 0 24 24">
+        <path d="m12 3 8 3v6c0 4-3.4 7-8 9-4.6-2-8-5-8-9V6l8-3Z" />
+        <path d="m8.5 12 2.3 2.3 4.7-4.7" />
+      </symbol>
+      <symbol id="scan" viewBox="0 0 24 24">
+        <path
+          d="M8 3H5a2 2 0 0 0-2 2v3m13-5h3a2 2 0 0 1 2 2v3M3 16v3a2 2 0 0 0 2 2h3m13-5v3a2 2 0 0 1-2 2h-3M7 8h10M7 12h7M7 16h10"
+        />
+      </symbol>
+      <symbol id="layers" viewBox="0 0 24 24">
+        <path d="m12 3 10 5-10 5L2 8l10-5Zm-10 9 10 5 10-5M2 16l10 5 10-5" />
+      </symbol>
+      <symbol id="chart" viewBox="0 0 24 24">
+        <path d="M4 3v17h17M8 16v-5m5 5V6m5 10v-7" />
+      </symbol>
+      <symbol id="book" viewBox="0 0 24 24">
+        <path
+          d="M12 5v16M3 4c4-1 7 0 9 2 2-2 5-3 9-2v15c-4-1-7 0-9 2-2-2-5-3-9-2V4Z"
+        />
+      </symbol>
+      <symbol id="arrow" viewBox="0 0 24 24">
+        <path d="M4 12h16m-6-6 6 6-6 6" />
+      </symbol>
+      <symbol id="lock" viewBox="0 0 24 24">
+        <rect x="5" y="10" width="14" height="11" rx="2" />
+        <path d="M8 10V7a4 4 0 0 1 8 0v3m-4 5v2" />
+      </symbol>
+      <symbol id="spark" viewBox="0 0 24 24">
+        <path
+          d="m12 3 2.5 6.5L21 12l-6.5 2.5L12 21l-2.5-6.5L3 12l6.5-2.5L12 3Z"
+        />
+      </symbol>
+      <symbol id="clock" viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="9" />
+        <path d="M12 7v5l3 2" />
+      </symbol>
+      <symbol id="download" viewBox="0 0 24 24">
+        <path d="M12 3v12m-4-4 4 4 4-4M4 15v5h16v-5" />
+      </symbol>
+      <symbol id="check" viewBox="0 0 24 24">
+        <path d="m5 12 4 4L19 6" />
+      </symbol>
+      <symbol id="warning" viewBox="0 0 24 24">
+        <path d="m12 3 10 17H2L12 3Zm0 6v4m0 3v1" />
+      </symbol>
+      <symbol id="close" viewBox="0 0 24 24">
+        <path d="m6 6 12 12M6 18 18 6" />
+      </symbol>
+    </svg>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <aside class="sidebar">
+      <a class="brand" href="#analyzer" aria-label="Signal home"
+        ><span class="brand-icon">{{ icon('shield') }}</span
+        ><span>signal<span class="brand-period">.</span></span></a
+      >
+      <div class="workspace-label">YOUR WORKSPACE</div>
+      <nav class="navigation" aria-label="Main navigation">
+        <a
+          href="#analyzer"
+          class="nav-item active"
+          data-view="analyzer"
+          aria-current="page"
+          >{{ icon('scan') }}<span>Message analyzer</span></a
+        >
+        <a href="#batch" class="nav-item" data-view="batch"
+          >{{ icon('layers') }}<span>Batch check</span
+          ><span class="nav-note">50</span></a
+        >
+        <a href="#model" class="nav-item" data-view="model"
+          >{{ icon('chart') }}<span>Model insights</span></a
+        >
+        <a href="#about" class="nav-item" data-view="about"
+          >{{ icon('book') }}<span>How it works</span></a
+        >
+      </nav>
+      <div class="sidebar-bottom">
+        <div class="model-status">
+          <span class="status-dot"></span>Local model ready<span
+            class="status-caption"
+            >No API needed to analyze</span
+          >
+        </div>
+        <div class="sidebar-signature">
+          <span class="avatar">S</span>
+          <div>
+            Less noise. More signal.<small>ML based spam detection</small>
+          </div>
+        </div>
+      </div>
+    </aside>
+    <div class="app-shell">
+      <header class="topbar">
+        <div class="breadcrumb">
+          Workspace <span>/</span>
+          <strong id="breadcrumb-view">Message analyzer</strong>
+        </div>
+        <span class="local-badge">{{ icon('lock') }} Local by default</span>
+      </header>
+      <main id="main" tabindex="-1">
+        <section
+          id="view-analyzer"
+          class="view"
+          aria-labelledby="analyzer-heading"
+        >
+          <div class="page-heading">
+            <div>
+              <p class="eyebrow">
+                <span></span> ML BASED SPAM DETECTION SYSTEM
+              </p>
+              <h1 id="analyzer-heading">
+                A little clarity.<br />Before you <em>click.</em>
+              </h1>
+              <p class="page-description">
+                Spot the noise in your inbox with machine learning.<br />A clear
+                verdict, and the patterns behind it.
+              </p>
+            </div>
+            <div class="heading-note">
+              Built to explain,<br /><strong>not just predict.</strong
+              ><span class="note-line"></span>
+            </div>
+          </div>
+          <div class="analyzer-grid">
+            <div class="input-column">
+              <form id="analyze-form" class="card editor-card" novalidate>
+                <div class="card-heading">
+                  <div>
+                    <h2>Check a message</h2>
+                    <p>Paste an English SMS or short message below.</p>
+                  </div>
+                  <span class="mini-tag">01 / INPUT</span>
+                </div>
+                <label class="sr-only" for="message">Message to analyze</label>
+                <textarea
+                  id="message"
+                  maxlength="5000"
+                  placeholder="Hey, what landed in your inbox?&#10;&#10;Paste a message here to see whether its patterns look like spam."
+                  spellcheck="false"
+                  aria-describedby="message-count input-error"
+                ></textarea>
+                <div class="editor-meta">
+                  <span id="message-count">0 / 5,000 characters</span
+                  ><span class="keyboard-hint"
+                    ><kbd>Ctrl</kbd> + <kbd>Enter</kbd> to analyze</span
+                  >
+                </div>
+                <div class="samples">
+                  <span>Try an example</span
+                  ><button type="button" class="sample" data-sample="prize">
+                    Prize offer {{ icon('arrow') }}</button
+                  ><button type="button" class="sample" data-sample="everyday">
+                    Everyday text {{ icon('arrow') }}</button
+                  ><button type="button" class="sample" data-sample="urgent">
+                    Urgent request {{ icon('arrow') }}
+                  </button>
+                </div>
+                <p
+                  class="inline-error"
+                  id="input-error"
+                  role="alert"
+                  hidden
+                ></p>
+                <div class="editor-actions">
+                  <span class="privacy-note"
+                    >{{ icon('lock') }} Stays on this server</span
+                  ><button
+                    type="submit"
+                    class="button primary"
+                    id="analyze-button"
+                  >
+                    <span>Analyze message</span>{{ icon('arrow') }}
+                  </button>
+                </div>
+              </form>
+              <div class="ai-card card">
+                <span class="ai-icon">{{ icon('spark') }}</span>
+                <div>
+                  <h3>A second pair of eyes</h3>
+                  <p>
+                    Optional Gemini review. Your ML verdict stays independent.
+                  </p>
+                </div>
+                <span class="optional-tag">OPTIONAL</span>
+              </div>
+              <div class="session-heading">
+                <h3>Recent checks <span id="history-count">0</span></h3>
+                <span>This session only</span>
+              </div>
+              <div id="history-list" class="history-list">
+                <div class="history-empty">
+                  {{ icon('clock') }} Your recent checks will appear here.
+                </div>
+              </div>
+            </div>
+            <div class="result-column">
+              <section
+                class="card result-card"
+                aria-labelledby="result-heading"
+                aria-live="polite"
+                aria-atomic="true"
+              >
+                <div class="card-heading">
+                  <h2 id="result-heading">The verdict</h2>
+                  <span class="mini-tag">02 / ANALYSIS</span>
+                </div>
+                <div id="empty-result" class="empty-result">
+                  <div class="shield-orbit">
+                    <span class="orbit orbit-one"></span
+                    ><span class="orbit orbit-two"></span
+                    ><span class="orbit-dot"></span>
+                    <div class="shield-core">{{ icon('shield') }}</div>
+                  </div>
+                  <h3>A clearer picture awaits.</h3>
+                  <p>Add a message and let the model<br />connect the dots.</p>
+                  <span class="local-caption"
+                    ><span class="status-dot"></span> Powered by local machine
+                    learning</span
+                  >
+                </div>
+                <div id="loading-result" class="loading-result" hidden>
+                  <span class="spinner"></span>
+                  <h3>Finding the patterns…</h3>
+                  <p>Checking word and character features.</p>
+                </div>
+                <div id="result-content" hidden>
+                  <div class="verdict-line">
+                    <span id="verdict-icon" class="verdict-icon"
+                      >{{ icon('check') }}</span
+                    >
+                    <div>
+                      <p class="eyebrow">LOCAL MODEL VERDICT</p>
+                      <h3 id="prediction">Not spam</h3>
+                    </div>
+                    <span class="result-source">ML</span>
+                  </div>
+                  <p id="result-reason" class="result-reason"></p>
+                  <div class="score-heading">
+                    <span>Spam model score</span
+                    ><strong id="spam-score">0%</strong>
+                  </div>
+                  <div class="score-track">
+                    <span id="score-fill"></span
+                    ><i
+                      id="threshold-marker"
+                      title="Classification threshold"
+                    ></i>
+                  </div>
+                  <div class="score-axis">
+                    <span>Lower</span><span id="threshold-label"></span
+                    ><span>Higher</span>
+                  </div>
+                  <p class="score-note">
+                    A model estimate, not a safety rating.
+                  </p>
+                  <div id="review-note" class="review-note" hidden>
+                    {{ icon('warning') }}<span id="review-note-text"></span>
+                  </div>
+                  <div class="evidence-heading">
+                    <h4>What influenced the model</h4>
+                    <span>Learned features</span>
+                  </div>
+                  <div id="evidence" class="evidence"></div>
+                  <p class="evidence-legend">
+                    <span></span> Toward spam <i></i> Toward not spam
+                  </p>
+                  <div class="result-footer">
+                    <span
+                      >{{ icon('clock') }}
+                      <span id="processing-time"></span></span
+                    ><button class="text-button" type="button" id="copy-result">
+                      Copy result {{ icon('download') }}
+                    </button>
+                  </div>
+                </div>
+              </section>
+              <section
+                class="card ai-review-panel"
+                id="ai-panel"
+                hidden
+                aria-labelledby="ai-heading"
+              >
+                <div class="card-heading">
+                  <h3 id="ai-heading">{{ icon('spark') }} AI second opinion</h3>
+                  <span class="mini-tag">OPTIONAL</span>
+                </div>
+                <p id="ai-availability">
+                  {% if ai_configured %}Gemini is configured. Review sends this
+                  message to Google.{% else %}Add GEMINI_API_KEY to .env to
+                  enable Gemini review.{% endif %}
+                </p>
+                <label class="consent-label" for="ai-consent"
+                  ><input
+                    type="checkbox"
+                    id="ai-consent"
+                    {%
+                    if
+                    not
+                    ai_configured
+                    %}disabled{%
+                    endif
+                    %}
+                  />Allow sending this message to Gemini</label
+                ><button
+                  type="button"
+                  id="ai-review-button"
+                  class="button secondary"
+                  disabled
+                >
+                  Request a review {{ icon('spark') }}
+                </button>
+                <div
+                  id="ai-output"
+                  class="ai-output"
+                  aria-live="polite"
+                  hidden
+                ></div>
+                <div class="ai-tools" id="ai-tools" hidden>
+                  <button class="text-button" type="button" id="reply-button">
+                    Suggest replies</button
+                  ><button class="text-button" type="button" id="polish-button">
+                    Rewrite neutrally
+                  </button>
+                </div>
+                <div
+                  id="ai-tool-output"
+                  class="ai-tool-output"
+                  aria-live="polite"
+                  hidden
+                ></div>
+              </section>
+            </div>
+          </div>
+          <div class="benchmark-strip">
+            <div class="benchmark-intro">
+              {{ icon('chart') }}<span
+                >Measured, not guessed.<small
+                  >On a held-out English SMS test set</small
+                ></span
+              >
+            </div>
+            <div>
+              <strong
+                >{{ '%.1f'|format(report.test.accuracy * 100) }}<span
+                  >%</span
+                ></strong
+              ><small>Accuracy</small>
+            </div>
+            <div>
+              <strong
+                >{{ '%.1f'|format(report.test.spam_precision * 100) }}<span
+                  >%</span
+                ></strong
+              ><small>Spam precision</small>
+            </div>
+            <div>
+              <strong
+                >{{ '%.1f'|format(report.test.spam_recall * 100) }}<span
+                  >%</span
+                ></strong
+              ><small>Spam recall</small>
+            </div>
+            <a href="#model">Explore the model {{ icon('arrow') }}</a>
+          </div>
+        </section>
+        <section
+          id="view-batch"
+          class="view"
+          hidden
+          aria-labelledby="batch-heading"
+        >
+          <div class="page-heading compact">
+            <div>
+              <p class="eyebrow">MORE MESSAGES, SAME CLARITY</p>
+              <h1 id="batch-heading">Check a whole <em>batch.</em></h1>
+              <p class="page-description">
+                One message per line. Up to 50 checks, entirely local.
+              </p>
+            </div>
+          </div>
+          <form id="batch-form" class="card batch-card" novalidate>
+            <div class="card-heading">
+              <h2>Your messages</h2>
+              <button type="button" class="text-button" id="batch-example">
+                Load examples {{ icon('arrow') }}
+              </button>
+            </div>
+            <label class="sr-only" for="batch-input"
+              >Messages, one per line</label
+            ><textarea
+              id="batch-input"
+              placeholder="Hey, are we still meeting at 6?&#10;Congratulations! You won a cash prize. Call now to claim!&#10;Please bring your notes to the meeting tomorrow."
+              spellcheck="false"
+            ></textarea>
+            <div class="editor-meta">
+              <span id="batch-count">0 / 50 messages</span
+              ><span>5,000 characters per message</span>
+            </div>
+            <p id="batch-error" class="inline-error" role="alert" hidden></p>
+            <div class="editor-actions">
+              <span class="privacy-note"
+                >{{ icon('lock') }} No external AI calls</span
+              ><button type="submit" id="batch-button" class="button primary">
+                Analyze batch {{ icon('arrow') }}
+              </button>
+            </div>
+          </form>
+          <section
+            class="card batch-results"
+            id="batch-results"
+            hidden
+            aria-live="polite"
+          >
+            <div class="card-heading">
+              <div>
+                <h2>Batch results</h2>
+                <p id="batch-summary"></p>
+              </div>
+              <button type="button" class="button secondary" id="export-csv">
+                {{ icon('download') }} Export CSV
+              </button>
+            </div>
+            <div class="table-scroll">
+              <table>
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>Message</th>
+                    <th>Verdict</th>
+                    <th>Spam score</th>
+                    <th>Review</th>
+                  </tr>
+                </thead>
+                <tbody id="batch-rows"></tbody>
+              </table>
+            </div>
+          </section>
+        </section>
+        <section
+          id="view-model"
+          class="view"
+          hidden
+          aria-labelledby="model-heading"
+        >
+          <div class="page-heading compact">
+            <div>
+              <p class="eyebrow">THE SCIENCE BEHIND THE SIGNAL</p>
+              <h1 id="model-heading">Made to be <em>measured.</em></h1>
+              <p class="page-description">
+                Reproducible training. Untouched test data. Honest limitations.
+              </p>
+            </div>
+          </div>
+          <div class="model-metrics">
+            <div class="card metric-card">
+              <span>Spam precision</span
+              ><strong
+                >{{ '%.2f'|format(report.test.spam_precision * 100) }}%</strong
+              >
+              <p>Flagged messages that were spam</p>
+            </div>
+            <div class="card metric-card">
+              <span>Spam recall</span
+              ><strong
+                >{{ '%.2f'|format(report.test.spam_recall * 100) }}%</strong
+              >
+              <p>Spam messages the model caught</p>
+            </div>
+            <div class="card metric-card">
+              <span>Spam F1 score</span
+              ><strong>{{ '%.2f'|format(report.test.spam_f1 * 100) }}%</strong>
+              <p>Balance of precision and recall</p>
+            </div>
+          </div>
+          <div class="model-grid">
+            <section class="card detail-card">
+              <div class="card-heading">
+                <h2>A stronger text representation</h2>
+                {{ icon('layers') }}
+              </div>
+              <p>
+                Word TF-IDF captures terms and two-word phrases. Character
+                TF-IDF captures smaller patterns inside words, including
+                spelling variations.
+              </p>
+              <div class="feature-pair">
+                <div>
+                  <strong>{{ '{:,}'.format(report.features.word) }}</strong
+                  ><span>Word features · 1–2 grams</span>
+                </div>
+                <div>
+                  <strong>{{ '{:,}'.format(report.features.char) }}</strong
+                  ><span>Character features · 3–5 grams</span>
+                </div>
+              </div>
+              <dl class="model-details">
+                <div>
+                  <dt>Classifier</dt>
+                  <dd>Balanced logistic regression</dd>
+                </div>
+                <div>
+                  <dt>Regularization (C)</dt>
+                  <dd>{{ report.selection.C }}</dd>
+                </div>
+                <div>
+                  <dt>Decision threshold</dt>
+                  <dd>
+                    {{ '%.0f'|format(report.selection.threshold * 100) }}%
+                  </dd>
+                </div>
+                <div>
+                  <dt>Dataset</dt>
+                  <dd>{{ report.dataset.source }}</dd>
+                </div>
+                <div>
+                  <dt>Unique messages</dt>
+                  <dd>{{ '{:,}'.format(report.dataset.unique_rows) }}</dd>
+                </div>
+                <div>
+                  <dt>Split · train / validation / test</dt>
+                  <dd>
+                    {{ report.split.train }} / {{ report.split.validation }} /
+                    {{ report.split.test }}
+                  </dd>
+                </div>
+              </dl>
+            </section>
+            <section class="card detail-card">
+              <div class="card-heading">
+                <h2>Every prediction counts</h2>
+                <span class="mini-tag">TEST SET</span>
+              </div>
+              <p>
+                {{ report.test.samples }} held-out messages. Rows are actual
+                labels; columns are predictions.
+              </p>
+              <div class="confusion">
+                <span></span><span>Not spam</span><span>Spam</span
+                ><span>Not spam</span>
+                <div class="correct">
+                  {{ report.test.confusion_matrix.true_ham }}<small
+                    >Correct not spam</small
+                  >
+                </div>
+                <div class="incorrect">
+                  {{ report.test.confusion_matrix.false_spam }}<small
+                    >False alarms</small
+                  >
+                </div>
+                <span>Spam</span>
+                <div class="incorrect">
+                  {{ report.test.confusion_matrix.missed_spam }}<small
+                    >Missed spam</small
+                  >
+                </div>
+                <div class="correct">
+                  {{ report.test.confusion_matrix.true_spam }}<small
+                    >Correct spam</small
+                  >
+                </div>
+              </div>
+            </section>
+          </div>
+          <section class="card detail-card comparison-card">
+            <div class="card-heading">
+              <h2>Compared on the same split</h2>
+              <span class="mini-tag">BASELINE → IMPROVED</span>
+            </div>
+            <div class="table-scroll">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Model</th>
+                    <th>Accuracy</th>
+                    <th>Spam precision</th>
+                    <th>Spam recall</th>
+                    <th>Spam F1</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>Word counts + Naive Bayes</td>
+                    {% for metric in
+                    ['accuracy','spam_precision','spam_recall','spam_f1'] %}
+                    <td>
+                      {{ '%.2f'|format(report.baseline.test[metric]*100) }}%
+                    </td>
+                    {% endfor %}
+                  </tr>
+                  <tr class="selected-model">
+                    <td>Word + character TF-IDF + Logistic regression</td>
+                    {% for metric in
+                    ['accuracy','spam_precision','spam_recall','spam_f1'] %}
+                    <td>{{ '%.2f'|format(report.test[metric]*100) }}%</td>
+                    {% endfor %}
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <p class="small-note">
+              Vocabulary is fitted on training data. Model settings and
+              threshold are selected on validation data. The shipped model is
+              evaluated on the held-out test split.
+            </p>
+          </section>
+          <div class="limitations">
+            <h3>Know the boundaries</h3>
+            <p>
+              This benchmark covers English SMS, not every email or modern
+              phishing attack. Similar templates may remain across splits.
+              Scores are uncalibrated estimates; “not spam” never proves that a
+              sender or link is safe.
+            </p>
+            <a
+              class="text-button"
+              href="/api/model"
+              target="_blank"
+              rel="noopener"
+              >View complete evaluation JSON {{ icon('arrow') }}</a
+            >
+          </div>
+        </section>
+        <section
+          id="view-about"
+          class="view"
+          hidden
+          aria-labelledby="about-heading"
+        >
+          <div class="page-heading compact">
+            <div>
+              <p class="eyebrow">A SMALL MODEL. A CLEAR PURPOSE.</p>
+              <h1 id="about-heading">Follow the <em>signal.</em></h1>
+              <p class="page-description">
+                Machine learning does the detection. You stay in control.
+              </p>
+            </div>
+          </div>
+          <div class="steps">
+            <article class="card step-card">
+              <span class="step-number">01</span>{{ icon('scan') }}
+              <h2>Read the message</h2>
+              <p>
+                Your message is processed on this server. No AI API is called
+                during local detection, and the app does not save submitted
+                messages.
+              </p>
+            </article>
+            <article class="card step-card">
+              <span class="step-number">02</span>{{ icon('layers') }}
+              <h2>Find learned patterns</h2>
+              <p>
+                Two TF-IDF vectorizers turn words, phrases and character
+                fragments into features. A trained logistic regression model
+                weighs them.
+              </p>
+            </article>
+            <article class="card step-card">
+              <span class="step-number">03</span>{{ icon('chart') }}
+              <h2>Explain the decision</h2>
+              <p>
+                The spam score is compared with a validation-selected threshold.
+                The UI shows actual features and their direction of influence.
+              </p>
+            </article>
+          </div>
+          <section class="card about-ai">
+            <span class="ai-icon">{{ icon('spark') }}</span>
+            <div>
+              <h2>AI is a second opinion. You choose when.</h2>
+              <p>
+                After a local check, you can explicitly allow a Gemini review.
+                It can agree, disagree or be uncertain. Its response never
+                changes the ML verdict, score or benchmark. Optional reply
+                suggestions and neutral rewrites use the same consent.
+              </p>
+              <p>
+                No factual verification is claimed. If the API fails, your local
+                detector keeps working.
+              </p>
+            </div>
+          </section>
+          <div class="limitations">
+            <h3>About the project</h3>
+            <p>
+              Signal is an ML based spam detection system built with Python,
+              scikit-learn and Flask. Training is reproducible from a credited
+              public dataset. The full pipeline, evaluation report and tests are
+              included in the repository.
+            </p>
+          </div>
+        </section>
+        <footer class="page-footer">
+          <span>signal. <span>Less noise. More understanding.</span></span
+          ><span>Python + scikit-learn <i>·</i> Local first</span>
+        </footer>
+      </main>
+    </div>
+    <div id="toast" class="toast" role="status" hidden></div>
+  </body>
+</html>

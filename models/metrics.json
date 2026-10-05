@@ -1,0 +1,108 @@
+{
+  "model_name": "Word + character TF-IDF / Logistic regression",
+  "model_version": "1.0",
+  "sklearn_version": "1.9.1",
+  "seed": 42,
+  "dataset": {
+    "source": "UCI SMS Spam Collection",
+    "url": "https://archive.ics.uci.edu/static/public/228/sms+spam+collection.zip",
+    "citation": "Almeida, T. & Hidalgo, J. (2011). https://doi.org/10.24432/C5CC84",
+    "license": "CC BY 4.0",
+    "sha256": "7d039a24a6083ed9ef0f806ebad56bbb976e3aeb8de05669173bfdc4996c239d",
+    "raw_rows": 5574,
+    "unique_rows": 5159,
+    "duplicate_rows_removed": 415,
+    "conflicting_groups_removed": 0,
+    "class_counts": {
+      "ham": 4517,
+      "spam": 642
+    }
+  },
+  "split": {
+    "train": 3301,
+    "validation": 826,
+    "test": 1032
+  },
+  "split_strategy": "64/16/20 stratified split after NFKC/case/whitespace deduplication",
+  "selection": {
+    "objective": "validation spam F1; precision then proximity to 0.5 break ties",
+    "C": 8,
+    "threshold": 0.57,
+    "candidates": 153
+  },
+  "validation": {
+    "accuracy": 0.990315,
+    "spam_precision": 1.0,
+    "spam_recall": 0.92233,
+    "spam_f1": 0.959596,
+    "average_precision": 0.978363,
+    "brier_score": 0.010981,
+    "confusion_matrix": {
+      "true_ham": 723,
+      "false_spam": 0,
+      "missed_spam": 8,
+      "true_spam": 95
+    },
+    "samples": 826
+  },
+  "test": {
+    "accuracy": 0.985465,
+    "spam_precision": 0.966942,
+    "spam_recall": 0.914062,
+    "spam_f1": 0.939759,
+    "average_precision": 0.986588,
+    "brier_score": 0.0109,
+    "confusion_matrix": {
+      "true_ham": 900,
+      "false_spam": 4,
+      "missed_spam": 11,
+      "true_spam": 117
+    },
+    "samples": 1032
+  },
+  "baseline": {
+    "name": "CountVectorizer + MultinomialNB",
+    "threshold": 0.5,
+    "test": {
+      "accuracy": 0.985465,
+      "spam_precision": 0.97479,
+      "spam_recall": 0.90625,
+      "spam_f1": 0.939271,
+      "average_precision": 0.953695,
+      "brier_score": 0.014509,
+      "confusion_matrix": {
+        "true_ham": 901,
+        "false_spam": 3,
+        "missed_spam": 12,
+        "true_spam": 116
+      },
+      "samples": 1032
+    }
+  },
+  "candidate_validation": [
+    {
+      "C": 2,
+      "best_spam_f1": 0.956098
+    },
+    {
+      "C": 4,
+      "best_spam_f1": 0.956098
+    },
+    {
+      "C": 8,
+      "best_spam_f1": 0.959596
+    }
+  ],
+  "features": {
+    "word": 8181,
+    "char": 27164
+  },
+  "probability_note": "Uncalibrated model score, not a guarantee or safety rating. Class weighting and threshold tuning affect its interpretation.",
+  "limitations": [
+    "English SMS corpus; modern phishing, long emails, other languages and domain shifts are not validated.",
+    "Exact normalized duplicates are removed; similar spam templates may still occur across splits.",
+    "A not-spam prediction does not establish that links, claims or senders are safe.",
+    "The original model has no training provenance, so this baseline is retrained on the same split rather than presented as its historical accuracy."
+  ],
+  "artifact_sha256": "16ba6820f27507946e80314942e43edc1010a28b68358da5d0587d26728b6d38"
+}

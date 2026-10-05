@@ -1,0 +1,27 @@
+{
+  "browser": "chrome",
+  "checks": [
+    "Desktop empty state renders",
+    "Empty input error and focus",
+    "Spam verdict, features, score and opt-in AI panel",
+    "Local checks make no external browser AI requests",
+    "Not-spam styling, keyboard shortcut and session history",
+    "Unfamiliar language flags human review",
+    "Server errors recover without trapping controls",
+    "Loading state and cancellation prevent stale results",
+    "Simulated AI disagreement stays separate; HTML rendered as text",
+    "Simulated AI outage preserves the visible local result",
+    "Simulated reply and rewrite actions display safely",
+    "Batch form, actual predictions and downloadable CSV",
+    "Batch limit validation",
+    "CSV formula protection and HTML injection resistance",
+    "Model metrics and explanation views navigate correctly",
+    "390px layout has no page overflow; all views work",
+    "768px layout has no page overflow; all views work",
+    "No uncaught JavaScript errors"
+  ],
+  "total": 18,
+  "javascript_errors": [],
+  "ai_ui_responses": "simulated; live availability checked separately",
+  "screenshots": "test-results/*.png"
+}
